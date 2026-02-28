@@ -1,13 +1,7 @@
 -- KRYTIC HUB FREE v2.1 PEAK | Blox Fruits Bounty Grind | Mobile + PC | Undetect Tweaks 2026
 --COPYRIGHT RESERVED C2026
 -- ========================
-local OFFICIAL_RAW_URL = "https://raw.githubusercontent.com/nexusdevsfun-lang/krytic-hub/refs/heads/main/hubUI" -- CHANGE TO YOUR OWN
-local HttpService = game:GetService("HttpService")
-local success, source = pcall(HttpService.GetAsync, HttpService, OFFICIAL_RAW_URL)
-if not success or not source:find("KRYTIC HUB FREE v2.1 PEAK") then
-    game.Players.LocalPlayer:Kick("Anti-Leak: Official source use kar bhai")
-    return
-end
+
 
 local TS = game:GetService("TweenService")
 local Players = game:GetService("Players")
