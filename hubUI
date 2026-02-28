@@ -1,7 +1,7 @@
 -- KRYTIC HUB FREE v2.1 PEAK | Blox Fruits Bounty Grind | Mobile + PC | Undetect Tweaks 2026
--- 4 Pages UI + Cool Loading + Required Stats Toggle + High Ping Kick + Smart Hop
+--COPYRIGHT RESERVED C2026
 -- ========================
-local OFFICIAL_RAW_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/hub.lua" -- CHANGE TO YOUR OWN
+local OFFICIAL_RAW_URL = "https://raw.githubusercontent.com/nexusdevsfun-lang/krytic-hub/refs/heads/main/hubUI" -- CHANGE TO YOUR OWN
 local HttpService = game:GetService("HttpService")
 local success, source = pcall(HttpService.GetAsync, HttpService, OFFICIAL_RAW_URL)
 if not success or not source:find("KRYTIC HUB FREE v2.1 PEAK") then
