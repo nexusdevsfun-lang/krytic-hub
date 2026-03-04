@@ -1,5 +1,5 @@
--- KRYTIC HUB FREE v3.1 | Blox Fruits 2026 Meta | 2nd/3rd Sea | Fruits Only (Dragon/T-Rex/Light/Ice/Gravity/Eagle)
--- No Key | Premium Mobile UI | Auto Hop Self-Re-Execute | Live Ping | Delta Optimized | Undetect VIM 2026
+-- KRYTIC HUB FREE v3.1 FINAL | Blox Fruits 2nd/3rd Sea | Fruits Only (Dragon/T-Rex/Light/Ice/Gravity/Eagle)
+-- No Key | Premium Mobile UI | Auto Hop Re-Execute | Live Ping | Delta Optimized | Undetect VIM 2026
 
 local TS = game:GetService("TweenService")
 local Players = game:GetService("Players")
@@ -10,27 +10,20 @@ local UIS = game:GetService("UserInputService")
 local LP = Players.LocalPlayer
 
 -- Config
-local Config = {
-    Hunt = false,
-    Stats = false,
-    Hop = false,
-    MaxPing = 380
-}
-
+local Config = { Hunt = false, Stats = false, Hop = false, MaxPing = 380 }
 local Grinded = 0
 local StartVal = 0
 local Pirates = 0
 local Marines = 0
 local CurPing = 0
 
--- Allowed fruits (strict M1 only)
+-- Allowed fruits only
 local AllowedFruits = {"dragon", "trex", "light", "ice", "gravity", "eagle"}
-
 local lastFruitCheck = 0
 local hasValidFruit = false
 local currentFruit = "None"
 
--- Loading Screen (lightweight, mobile full screen)
+-- Loading Screen (lightweight)
 local function ShowLoading()
     local gui = Instance.new("ScreenGui")
     gui.IgnoreGuiInset = true
@@ -62,7 +55,7 @@ local function ShowLoading()
     gui:Destroy()
 end
 
--- Fruit check (cached, low CPU)
+-- Fruit check (cached)
 local function CheckFruit()
     if tick() - lastFruitCheck < 1.5 then return hasValidFruit end
     lastFruitCheck = tick()
@@ -145,7 +138,7 @@ local function GetNearest()
     return best
 end
 
--- Safe TP (mobile smooth)
+-- Safe TP
 local function SafeTP(pos)
     local root = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
@@ -153,7 +146,7 @@ local function SafeTP(pos)
     TS:Create(root, TweenInfo.new(0.18), {CFrame = CFrame.new(pos + off)}):Play():Wait()
 end
 
--- Attack (VIM optimized)
+-- Attack
 local function Attack()
     VIM:SendMouseButtonEvent(math.random(100,900), math.random(100,700), 0, true, game, 0)
     task.wait(math.random(6,15)/100)
@@ -202,7 +195,7 @@ local function LoadUI()
     title.Font = Enum.Font.GothamBlack
     title.TextScaled = true
     
-    -- Draggable (touch optimized)
+    -- Draggable
     local drag, ds, sp
     titleBar.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -223,7 +216,7 @@ local function LoadUI()
         end
     end)
     
-    -- Tabs (touch-friendly)
+    -- Tabs
     local tabs = {"Profile","Config","Premium","About"}
     local contents = {}
     
@@ -254,7 +247,7 @@ local function LoadUI()
     
     contents.Profile.Visible = true
     
-    -- Profile Label (mobile readable)
+    -- Profile Label
     local prof = Instance.new("TextLabel", contents.Profile)
     prof.Size = UDim2.new(0.94,0,0.94,0)
     prof.Position = UDim2.new(0.03,0,0.03,0)
@@ -269,7 +262,7 @@ local function LoadUI()
     Instance.new("UICorner", prof).CornerRadius = UDim.new(0,16)
     prof.Text = "Loading..."
 
-    -- Config Toggles (big for touch)
+    -- Config Toggles
     local function Toggle(y, label, key)
         local b = Instance.new("TextButton", contents.Config)
         b.Size = UDim2.new(0.88,0,0.16,0)
@@ -309,8 +302,7 @@ local function LoadUI()
     about.TextScaled = true
     about.Text = "KRYTIC HUB v3.0\nSmooth UI • 2nd/3rd Sea Grind\nDelta/iOS Ready\nOfficial: github.com/BOTMAKER-CMD/krytic-hub"
 
-    -- Live Update (1.5s interval for mobile)
-    local lastUpdate = 0
+    -- Live Update
     RS.Heartbeat:Connect(function()
         if tick() - lastUpdate < 1.5 then return end
         lastUpdate = tick()
@@ -353,7 +345,7 @@ Hunt: %s | Hop: %s
             LP:Kick("High Ping ("..math.floor(CurPing).."ms)")
         end
         
-        -- Hunt (fruit check)
+        -- Hunt
         if Config.Hunt and Config.Stats then
             local lvl = LP:WaitForChild("Data",4):WaitForChild("Level",4).Value
             if lvl >= 700 then
