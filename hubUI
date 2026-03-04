@@ -1,8 +1,5 @@
--- KRYTIC HUB FREE v2.5 | Blox Fruits 2nd/3rd Sea | SMOOTH RESPONSIVE UI | Mobile Optimized
--- Pirate = ALL Kill | Marine = Pirates Only | Live Ping/Factions/Sea | Auto Hop | No Stuck
--- Delta/iOS Compatible | Undetect VIM + Heartbeat 2026
-
-
+-- KRYTIC HUB FREE v3.0 FINAL | Blox Fruits 2nd/3rd Sea | NO KEY | Fruit Only (Dragon/T-Rex/Light/Ice/Gravity/Eagle)
+-- Direct Load | Premium UI | Auto Hop Re-Execute | Live Ping | Mobile Friendly | Undetect VIM 2026
 
 local TS = game:GetService("TweenService")
 local Players = game:GetService("Players")
@@ -13,14 +10,28 @@ local UIS = game:GetService("UserInputService")
 local LP = Players.LocalPlayer
 
 -- Config
-local Config = {Hunt = false, Stats = false, Hop = false, MaxPing = 380}
-local Grinded, StartVal, Pirates, Marines, CurPing = 0, 0, 0, 0, 0
-local fade = TweenInfo.new(0.4, Enum.EasingStyle.Quint)
-local hover = TweenInfo.new(0.25, Enum.EasingStyle.Sine)
-local Skills = {"Z","X","C","V"}
+local Config = {
+    Hunt = false,
+    Stats = false,
+    Hop = false,
+    MaxPing = 380
+}
 
--- Fast Loading Screen
-local function FastLoad()
+local Grinded = 0
+local StartVal = 0
+local Pirates = 0
+local Marines = 0
+local CurPing = 0
+
+-- Allowed fruits only (M1 capable)
+local AllowedFruits = {"dragon", "trex", "light", "ice", "gravity", "eagle"}
+
+local lastFruitCheck = 0
+local hasValidFruit = false
+local currentFruit = "None"
+
+-- Fast loading screen
+local function ShowLoading()
     local gui = Instance.new("ScreenGui", game.CoreGui)
     gui.IgnoreGuiInset = true
     
@@ -29,17 +40,19 @@ local function FastLoad()
     f.BackgroundColor3 = Color3.fromRGB(8,8,15)
     
     local title = Instance.new("TextLabel", f)
-    title.Size = UDim2.new(0.9,0,0.15,0)
-    title.Position = UDim2.new(0.05,0,0.25,0)
+    title.Size = UDim2.new(0.9,0,0.2,0)
+    title.Position = UDim2.new(0.05,0,0.35,0)
     title.BackgroundTransparency = 1
     title.Text = "KRYTIC HUB"
     title.TextColor3 = Color3.fromRGB(0,255,180)
     title.Font = Enum.Font.GothamBlack
     title.TextScaled = true
+    title.TextStrokeTransparency = 0.7
+    title.TextStrokeColor3 = Color3.fromRGB(0,0,0)
     
     local spinner = Instance.new("Frame", f)
-    spinner.Size = UDim2.new(0.12,0,0.12,0)
-    spinner.Position = UDim2.new(0.44,0,0.55,0)
+    spinner.Size = UDim2.new(0.18,0,0.18,0)
+    spinner.Position = UDim2.new(0.41,0,0.55,0)
     spinner.BackgroundColor3 = Color3.fromRGB(0,255,180)
     spinner.BorderSizePixel = 0
     Instance.new("UICorner", spinner).CornerRadius = UDim.new(1,0)
@@ -50,24 +63,63 @@ local function FastLoad()
     gui:Destroy()
 end
 
--- Core Functions
-local function GetStat()
-    local ls = LP:WaitForChild("Leaderstats", 8)
-    return ls and (ls:FindFirstChild("Bounty") or ls:FindFirstChild("Honor"))
+-- Fruit check (only allowed fruits)
+local function CheckFruit()
+    if tick() - lastFruitCheck < 1.2 then return hasValidFruit end
+    lastFruitCheck = tick()
+    
+    local char = LP.Character
+    if not char then
+        hasValidFruit = false
+        currentFruit = "No Tool"
+        return false
+    end
+    
+    local tool = char:FindFirstChildOfClass("Tool")
+    if not tool then
+        hasValidFruit = false
+        currentFruit = "No Tool"
+        return false
+    end
+    
+    currentFruit = tool.Name
+    local name = tool.Name:lower()
+    
+    for _, fruit in ipairs(AllowedFruits) do
+        if name:find(fruit) then
+            hasValidFruit = true
+            return true
+        end
+    end
+    
+    hasValidFruit = false
+    return false
 end
+
+-- Get Bounty/Honor
+local function GetStat()
+    local ls = LP:FindFirstChild("Leaderstats")
+    if ls then
+        return ls:FindFirstChild("Bounty") or ls:FindFirstChild("Honor")
+    end
+    return nil
+end
+
 StartVal = GetStat() and GetStat().Value or 0
 
+-- Count factions
 local function CountFactions()
     local p, m = 0, 0
     for _, plr in Players:GetPlayers() do
         local d = plr:FindFirstChild("Data")
         if d and d:FindFirstChild("Faction") then
-            if d.Faction.Value == "Pirates" then p = p + 1 else m = m + 1 end
+            if d.Faction.Value == "Pirates" then p += 1 else m += 1 end
         end
     end
     return p, m
 end
 
+-- Nearest target
 local function GetNearest()
     local char = LP.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return end
@@ -94,6 +146,7 @@ local function GetNearest()
     return best
 end
 
+-- Safe TP
 local function SafeTP(pos)
     local root = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
@@ -101,6 +154,7 @@ local function SafeTP(pos)
     TS:Create(root, TweenInfo.new(0.18), {CFrame = CFrame.new(pos + off)}):Play():Wait()
 end
 
+-- Attack
 local function Attack()
     VIM:SendMouseButtonEvent(math.random(100,900), math.random(100,700), 0, true, game, 0)
     task.wait(math.random(6,15)/100)
@@ -115,7 +169,7 @@ local function Attack()
     end
 end
 
--- Smooth Responsive UI
+-- Premium Mobile UI
 local function LoadUI()
     local gui = Instance.new("ScreenGui")
     gui.Name = "KryticHub"
@@ -124,21 +178,22 @@ local function LoadUI()
     gui.ResetOnSpawn = false
     
     local main = Instance.new("Frame", gui)
-    main.Size = UDim2.new(0.92,0,0.88,0)
-    main.Position = UDim2.new(0.04,0,0.06,0)
+    main.Size = UDim2.new(0.96,0,0.92,0)
+    main.Position = UDim2.new(0.02,0,0.04,0)
     main.BackgroundColor3 = Color3.fromRGB(12,12,18)
     main.BorderSizePixel = 0
-    Instance.new("UICorner", main).CornerRadius = UDim.new(0,24)
+    local mainCorner = Instance.new("UICorner", main); mainCorner.CornerRadius = UDim.new(0,24)
     
-    local stroke = Instance.new("UIStroke", main)
-    stroke.Color = Color3.fromRGB(0,255,180)
-    stroke.Thickness = 1.5
-    stroke.Transparency = 0.3
+    local mainStroke = Instance.new("UIStroke", main)
+    mainStroke.Color = Color3.fromRGB(0,255,180)
+    mainStroke.Thickness = 1.8
     
-    -- Title Bar
+    -- Title
     local titleBar = Instance.new("Frame", main)
-    titleBar.Size = UDim2.new(1,0,0.08,0)
-    titleBar.BackgroundTransparency = 1
+    titleBar.Size = UDim2.new(1,0,0.09,0)
+    titleBar.BackgroundColor3 = Color3.fromRGB(20,20,30)
+    titleBar.BorderSizePixel = 0
+    local titleCorner = Instance.new("UICorner", titleBar); titleCorner.CornerRadius = UDim.new(0,24,0,0)
     
     local title = Instance.new("TextLabel", titleBar)
     title.Size = UDim2.new(1,0,1,0)
@@ -148,7 +203,7 @@ local function LoadUI()
     title.Font = Enum.Font.GothamBlack
     title.TextScaled = true
     
-    -- Draggable (mobile touch support)
+    -- Draggable (touch)
     local drag, ds, sp
     titleBar.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -169,66 +224,45 @@ local function LoadUI()
         end
     end)
     
-    -- Tabs (responsive buttons)
-    local tabs = {"Profile", "Config", "Premium", "About"}
+    -- Tabs
+    local tabs = {"Profile","Config","Premium","About"}
     local contents = {}
-    local tabButtons = {}
+    local tabBtns = {}
     
     for i, name in ipairs(tabs) do
         local btn = Instance.new("TextButton", main)
-        btn.Size = UDim2.new(0.25,0,0.07,0)
-        btn.Position = UDim2.new((i-1)*0.25,0,0.08,0)
-        btn.BackgroundTransparency = 1
+        btn.Size = UDim2.new(0.25,0,0.09,0)
+        btn.Position = UDim2.new((i-1)*0.25,0,0.09,0)
+        btn.BackgroundColor3 = Color3.fromRGB(25,25,35)
         btn.Text = name
         btn.TextColor3 = Color3.fromRGB(200,200,220)
         btn.Font = Enum.Font.GothamSemibold
         btn.TextScaled = true
         btn.AutoButtonColor = false
-        tabButtons[name] = btn
+        tabBtns[name] = btn
         
-        local underline = Instance.new("Frame", btn)
-        underline.Size = UDim2.new(0,0,0.06,0)
-        underline.Position = UDim2.new(0,0,0.94,0)
-        underline.BackgroundColor3 = Color3.fromRGB(0,255,180)
-        underline.BorderSizePixel = 0
+        local corner = Instance.new("UICorner", btn); corner.CornerRadius = UDim.new(0,12)
         
         local content = Instance.new("Frame", main)
-        content.Size = UDim2.new(1,0,0.85,0)
-        content.Position = UDim2.new(0,0,0.15,0)
+        content.Size = UDim2.new(1,0,0.82,0)
+        content.Position = UDim2.new(0,0,0.18,0)
         content.BackgroundTransparency = 1
         content.Visible = false
         contents[name] = content
         
-        btn.MouseEnter:Connect(function()
-            TS:Create(underline, hover, {Size = UDim2.new(1,0,0.06,0)}):Play()
-            TS:Create(btn, hover, {TextColor3 = Color3.fromRGB(0,255,180)}):Play()
-        end)
-        btn.MouseLeave:Connect(function()
-            TS:Create(underline, hover, {Size = UDim2.new(0,0,0.06,0)}):Play()
-            TS:Create(btn, hover, {TextColor3 = Color3.fromRGB(200,200,220)}):Play()
-        end)
-        
         btn.MouseButton1Click:Connect(function()
             for _, c in pairs(contents) do c.Visible = false end
             content.Visible = true
-            
-            for _, b in pairs(tabButtons) do
-                TS:Create(b:FindFirstChild("Frame"), hover, {Size = UDim2.new(0,0,0.06,0)}):Play()
-                TS:Create(b, hover, {TextColor3 = Color3.fromRGB(200,200,220)}):Play()
-            end
-            TS:Create(underline, hover, {Size = UDim2.new(1,0,0.06,0)}):Play()
-            TS:Create(btn, hover, {TextColor3 = Color3.fromRGB(0,255,180)}):Play()
         end)
     end
     
+    -- Default Profile
     contents.Profile.Visible = true
-    tabButtons["Profile"]:FindFirstChild("Frame").Size = UDim2.new(1,0,0.06,0)
-    tabButtons["Profile"].TextColor3 = Color3.fromRGB(0,255,180)
     
-    -- Profile Content
+    -- Profile Label
     local prof = Instance.new("TextLabel", contents.Profile)
-    prof.Size = UDim2.new(0.94,0,0.92,0)
-    prof.Position = UDim2.new(0.03,0,0.04,0)
+    prof.Size = UDim2.new(0.94,0,0.94,0)
+    prof.Position = UDim2.new(0.03,0,0.03,0)
     prof.BackgroundColor3 = Color3.fromRGB(18,18,25)
     prof.BackgroundTransparency = 0.85
     prof.TextColor3 = Color3.fromRGB(240,240,255)
@@ -237,31 +271,31 @@ local function LoadUI()
     prof.TextYAlignment = Enum.TextYAlignment.Top
     prof.TextWrapped = true
     prof.Font = Enum.Font.Gotham
-    Instance.new("UICorner", prof).CornerRadius = UDim.new(0,18)
-    prof.Text = "Loading your dashboard..."
+    Instance.new("UICorner", prof).CornerRadius = UDim.new(0,16)
+    prof.Text = "Loading..."
 
-    -- Config Toggles
-    local function CreateToggle(yPos, label, key)
-        local toggle = Instance.new("TextButton", contents.Config)
-        toggle.Size = UDim2.new(0.88,0,0.14,0)
-        toggle.Position = UDim2.new(0.06,0,yPos,0)
-        toggle.BackgroundColor3 = Color3.fromRGB(25,25,35)
-        toggle.Text = label .. ": OFF"
-        toggle.TextColor3 = Color3.fromRGB(220,220,240)
-        toggle.Font = Enum.Font.GothamBold
-        toggle.TextScaled = true
-        Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,16)
+    -- Config Toggles (big touch buttons)
+    local function Toggle(y, label, key)
+        local b = Instance.new("TextButton", contents.Config)
+        b.Size = UDim2.new(0.88,0,0.16,0)
+        b.Position = UDim2.new(0.06,0,y,0)
+        b.BackgroundColor3 = Color3.fromRGB(25,25,35)
+        b.Text = label .. ": OFF"
+        b.TextColor3 = Color3.fromRGB(255,255,255)
+        b.Font = Enum.Font.GothamBold
+        b.TextScaled = true
+        local corner = Instance.new("UICorner", b); corner.CornerRadius = UDim.new(0,16)
         
-        toggle.MouseButton1Click:Connect(function()
+        b.MouseButton1Click:Connect(function()
             Config[key] = not Config[key]
-            toggle.Text = label .. ": " .. (Config[key] and "ON" or "OFF")
-            toggle.BackgroundColor3 = Config[key] and Color3.fromRGB(0,255,180) or Color3.fromRGB(25,25,35)
+            b.Text = label .. ": " .. (Config[key] and "ON" or "OFF")
+            b.BackgroundColor3 = Config[key] and Color3.fromRGB(0,255,180) or Color3.fromRGB(25,25,35)
         end)
     end
     
-    CreateToggle(0.08, "Enable Stats (Required)", "Stats")
-    CreateToggle(0.28, "Auto Hunt", "Hunt")
-    CreateToggle(0.48, "Auto Server Hop", "Hop")
+    Toggle(0.1, "Enable Stats", "Stats")
+    Toggle(0.32, "Auto Hunt", "Hunt")
+    Toggle(0.54, "Auto Server Hop", "Hop")
     
     -- Premium & About
     local prem = Instance.new("TextLabel", contents.Premium)
@@ -270,7 +304,7 @@ local function LoadUI()
     prem.BackgroundTransparency = 1
     prem.TextColor3 = Color3.fromRGB(0,255,180)
     prem.TextScaled = true
-    prem.Text = "PREMIUM COMING SOON\n\n• 2x Faster Hunt\n• Rainbow UI Effects\n• Priority Target Selection\n• Custom Perks"
+    prem.Text = "PREMIUM COMING SOON\nFaster farm • Rainbow UI • Priority targets"
     
     local about = Instance.new("TextLabel", contents.About)
     about.Size = UDim2.new(0.9,0,0.9,0)
@@ -278,14 +312,10 @@ local function LoadUI()
     about.BackgroundTransparency = 1
     about.TextColor3 = Color3.fromRGB(200,200,220)
     about.TextScaled = true
-    about.Text = "KRYTIC HUB v2.5\nSmooth & Responsive UI\nMade for real grinders\n2nd/3rd Sea Auto Hunt\nLive Stats & Ping\nDelta/iOS Ready\nOfficial: github.com/BOTMAKER-CMD/krytic-hub"
+    about.Text = "KRYTIC HUB v2.5 Mobile\nSmooth UI • 2nd/3rd Sea Grind\nDelta/iOS Ready\nOfficial: github.com/BOTMAKER-CMD/krytic-hub"
 
-    -- Live Update (every 1.2s for smoothness)
-    local lastUpdate = 0
-    RS.Heartbeat:Connect(function()
-        if tick() - lastUpdate < 1.2 then return end
-        lastUpdate = tick()
-        
+    -- Live Update
+    RS.Stepped:Connect(function()
         pcall(function()
             CurPing = LP:GetNetworkPing() * 1000
             local stat = GetStat()
@@ -293,9 +323,9 @@ local function LoadUI()
             Grinded = cur - StartVal
             Pirates, Marines = CountFactions()
             
-            local data = LP:WaitForChild("Data", 4)
-            local lvl = data:WaitForChild("Level", 4).Value
-            local fac = data:WaitForChild("Faction", 4).Value
+            local data = LP:WaitForChild("Data",4)
+            local lvl = data:WaitForChild("Level",4).Value
+            local fac = data:WaitForChild("Faction",4).Value
             local sea = lvl < 700 and "1st Sea" or lvl < 1500 and "2nd Sea" or "3rd Sea"
             local pingCol = CurPing < 150 and "🟢" or CurPing < 300 and "🟡" or "🔴"
             
@@ -321,23 +351,31 @@ Hunt: %s | Hop: %s
         
         -- Ping kick
         if CurPing > Config.MaxPing then
-            LP:Kick("KRYTIC • High Ping ("..math.floor(CurPing).."ms) - Rejoin")
+            LP:Kick("High Ping ("..math.floor(CurPing).."ms)")
         end
         
-        -- Hunt logic
+        -- Hunt (fruit check)
         if Config.Hunt and Config.Stats then
             local lvl = LP:WaitForChild("Data",4):WaitForChild("Level",4).Value
             if lvl >= 700 then
+                if not CheckFruit() then
+                    prof.TextColor3 = Color3.fromRGB(255,100,100)
+                    prof.Text = "⚠️ Only Dragon/T-Rex/Light/Ice/Gravity/Eagle allowed\nEquip allowed fruit to grind"
+                    return
+                end
+                
+                prof.TextColor3 = Color3.fromRGB(240,240,255)
+                
                 local target = GetNearest()
                 if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
                     SafeTP(target.Character.HumanoidRootPart.Position)
-                    task.wait(math.random(55,165)/1000)
+                    task.wait(math.random(50,150)/1000)
                     Attack()
                 end
             end
         end
         
-        -- Server Hop (~30s check)
+        -- Auto Hop + Re-Execute
         local hopTimer = hopTimer or 0
         hopTimer = hopTimer + 1
         if hopTimer >= 1800 and Config.Hop then
@@ -345,7 +383,14 @@ Hunt: %s | Hop: %s
             local p, m = CountFactions()
             local myFac = LP.Data.Faction.Value
             local low = (myFac == "Pirates" and (p + m < 5)) or (myFac == "Marines" and p < 3)
-            if low then TServ:Teleport(game.PlaceId, LP) end
+            if low then
+                pcall(function()
+                    local code = HttpService:GetAsync(OFFICIAL_RAW_URL)
+                    TServ:Teleport(game.PlaceId, LP)
+                    task.wait(0.5)
+                    loadstring(code)()
+                end)
+            end
         end
     end)
 end
