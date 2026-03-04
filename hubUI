@@ -1,5 +1,5 @@
--- KRYTIC HUB FREE v3.0 FINAL | Blox Fruits 2nd/3rd Sea | NO KEY | Fruit Only (Dragon/T-Rex/Light/Ice/Gravity/Eagle)
--- Direct Load | Premium UI | Auto Hop Re-Execute | Live Ping | Mobile Friendly | Undetect VIM 2026
+-- KRYTIC HUB FREE v3.1 | Blox Fruits 2026 Meta | 2nd/3rd Sea | Fruits Only (Dragon/T-Rex/Light/Ice/Gravity/Eagle)
+-- No Key | Premium Mobile UI | Auto Hop Self-Re-Execute | Live Ping | Delta Optimized | Undetect VIM 2026
 
 local TS = game:GetService("TweenService")
 local Players = game:GetService("Players")
@@ -23,17 +23,18 @@ local Pirates = 0
 local Marines = 0
 local CurPing = 0
 
--- Allowed fruits only (M1 capable)
+-- Allowed fruits (strict M1 only)
 local AllowedFruits = {"dragon", "trex", "light", "ice", "gravity", "eagle"}
 
 local lastFruitCheck = 0
 local hasValidFruit = false
 local currentFruit = "None"
 
--- Fast loading screen
+-- Loading Screen (lightweight, mobile full screen)
 local function ShowLoading()
-    local gui = Instance.new("ScreenGui", game.CoreGui)
+    local gui = Instance.new("ScreenGui")
     gui.IgnoreGuiInset = true
+    gui.Parent = game.CoreGui
     
     local f = Instance.new("Frame", gui)
     f.Size = UDim2.new(1,0,1,0)
@@ -47,8 +48,6 @@ local function ShowLoading()
     title.TextColor3 = Color3.fromRGB(0,255,180)
     title.Font = Enum.Font.GothamBlack
     title.TextScaled = true
-    title.TextStrokeTransparency = 0.7
-    title.TextStrokeColor3 = Color3.fromRGB(0,0,0)
     
     local spinner = Instance.new("Frame", f)
     spinner.Size = UDim2.new(0.18,0,0.18,0)
@@ -59,44 +58,45 @@ local function ShowLoading()
     
     TS:Create(spinner, TweenInfo.new(1.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), {Rotation = 360}):Play()
     
-    task.wait(1.5)
+    task.wait(1.2)
     gui:Destroy()
 end
 
--- Fruit check (only allowed fruits)
+-- Fruit check (cached, low CPU)
 local function CheckFruit()
-    if tick() - lastFruitCheck < 1.2 then return hasValidFruit end
+    if tick() - lastFruitCheck < 1.5 then return hasValidFruit end
     lastFruitCheck = tick()
     
-    local char = LP.Character
-    if not char then
-        hasValidFruit = false
-        currentFruit = "No Tool"
-        return false
-    end
-    
-    local tool = char:FindFirstChildOfClass("Tool")
-    if not tool then
-        hasValidFruit = false
-        currentFruit = "No Tool"
-        return false
-    end
-    
-    currentFruit = tool.Name
-    local name = tool.Name:lower()
-    
-    for _, fruit in ipairs(AllowedFruits) do
-        if name:find(fruit) then
-            hasValidFruit = true
-            return true
+    pcall(function()
+        local char = LP.Character
+        if not char then
+            hasValidFruit = false
+            currentFruit = "No Tool"
+            return
         end
-    end
-    
-    hasValidFruit = false
-    return false
+        
+        local tool = char:FindFirstChildOfClass("Tool")
+        if not tool then
+            hasValidFruit = false
+            currentFruit = "No Tool"
+            return
+        end
+        
+        currentFruit = tool.Name
+        local name = tool.Name:lower()
+        
+        for _, fruit in ipairs(AllowedFruits) do
+            if name:find(fruit) then
+                hasValidFruit = true
+                return
+            end
+        end
+        
+        hasValidFruit = false
+    end)
 end
 
--- Get Bounty/Honor
+-- Get stat
 local function GetStat()
     local ls = LP:FindFirstChild("Leaderstats")
     if ls then
@@ -104,7 +104,6 @@ local function GetStat()
     end
     return nil
 end
-
 StartVal = GetStat() and GetStat().Value or 0
 
 -- Count factions
@@ -113,7 +112,7 @@ local function CountFactions()
     for _, plr in Players:GetPlayers() do
         local d = plr:FindFirstChild("Data")
         if d and d:FindFirstChild("Faction") then
-            if d.Faction.Value == "Pirates" then p += 1 else m += 1 end
+            if d.Faction.Value == "Pirates" then p = p + 1 else m = m + 1 end
         end
     end
     return p, m
@@ -146,7 +145,7 @@ local function GetNearest()
     return best
 end
 
--- Safe TP
+-- Safe TP (mobile smooth)
 local function SafeTP(pos)
     local root = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
@@ -154,7 +153,7 @@ local function SafeTP(pos)
     TS:Create(root, TweenInfo.new(0.18), {CFrame = CFrame.new(pos + off)}):Play():Wait()
 end
 
--- Attack
+-- Attack (VIM optimized)
 local function Attack()
     VIM:SendMouseButtonEvent(math.random(100,900), math.random(100,700), 0, true, game, 0)
     task.wait(math.random(6,15)/100)
@@ -182,7 +181,7 @@ local function LoadUI()
     main.Position = UDim2.new(0.02,0,0.04,0)
     main.BackgroundColor3 = Color3.fromRGB(12,12,18)
     main.BorderSizePixel = 0
-    local mainCorner = Instance.new("UICorner", main); mainCorner.CornerRadius = UDim.new(0,24)
+    Instance.new("UICorner", main).CornerRadius = UDim.new(0,24)
     
     local mainStroke = Instance.new("UIStroke", main)
     mainStroke.Color = Color3.fromRGB(0,255,180)
@@ -193,7 +192,7 @@ local function LoadUI()
     titleBar.Size = UDim2.new(1,0,0.09,0)
     titleBar.BackgroundColor3 = Color3.fromRGB(20,20,30)
     titleBar.BorderSizePixel = 0
-    local titleCorner = Instance.new("UICorner", titleBar); titleCorner.CornerRadius = UDim.new(0,24,0,0)
+    Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0,24,0,0)
     
     local title = Instance.new("TextLabel", titleBar)
     title.Size = UDim2.new(1,0,1,0)
@@ -203,7 +202,7 @@ local function LoadUI()
     title.Font = Enum.Font.GothamBlack
     title.TextScaled = true
     
-    -- Draggable (touch)
+    -- Draggable (touch optimized)
     local drag, ds, sp
     titleBar.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
@@ -224,10 +223,9 @@ local function LoadUI()
         end
     end)
     
-    -- Tabs
+    -- Tabs (touch-friendly)
     local tabs = {"Profile","Config","Premium","About"}
     local contents = {}
-    local tabBtns = {}
     
     for i, name in ipairs(tabs) do
         local btn = Instance.new("TextButton", main)
@@ -238,8 +236,6 @@ local function LoadUI()
         btn.TextColor3 = Color3.fromRGB(200,200,220)
         btn.Font = Enum.Font.GothamSemibold
         btn.TextScaled = true
-        btn.AutoButtonColor = false
-        tabBtns[name] = btn
         
         local corner = Instance.new("UICorner", btn); corner.CornerRadius = UDim.new(0,12)
         
@@ -256,10 +252,9 @@ local function LoadUI()
         end)
     end
     
-    -- Default Profile
     contents.Profile.Visible = true
     
-    -- Profile Label
+    -- Profile Label (mobile readable)
     local prof = Instance.new("TextLabel", contents.Profile)
     prof.Size = UDim2.new(0.94,0,0.94,0)
     prof.Position = UDim2.new(0.03,0,0.03,0)
@@ -274,7 +269,7 @@ local function LoadUI()
     Instance.new("UICorner", prof).CornerRadius = UDim.new(0,16)
     prof.Text = "Loading..."
 
-    -- Config Toggles (big touch buttons)
+    -- Config Toggles (big for touch)
     local function Toggle(y, label, key)
         local b = Instance.new("TextButton", contents.Config)
         b.Size = UDim2.new(0.88,0,0.16,0)
@@ -284,7 +279,7 @@ local function LoadUI()
         b.TextColor3 = Color3.fromRGB(255,255,255)
         b.Font = Enum.Font.GothamBold
         b.TextScaled = true
-        local corner = Instance.new("UICorner", b); corner.CornerRadius = UDim.new(0,16)
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0,16)
         
         b.MouseButton1Click:Connect(function()
             Config[key] = not Config[key]
@@ -312,10 +307,14 @@ local function LoadUI()
     about.BackgroundTransparency = 1
     about.TextColor3 = Color3.fromRGB(200,200,220)
     about.TextScaled = true
-    about.Text = "KRYTIC HUB v2.5 Mobile\nSmooth UI • 2nd/3rd Sea Grind\nDelta/iOS Ready\nOfficial: github.com/BOTMAKER-CMD/krytic-hub"
+    about.Text = "KRYTIC HUB v3.0\nSmooth UI • 2nd/3rd Sea Grind\nDelta/iOS Ready\nOfficial: github.com/BOTMAKER-CMD/krytic-hub"
 
-    -- Live Update
-    RS.Stepped:Connect(function()
+    -- Live Update (1.5s interval for mobile)
+    local lastUpdate = 0
+    RS.Heartbeat:Connect(function()
+        if tick() - lastUpdate < 1.5 then return end
+        lastUpdate = tick()
+        
         pcall(function()
             CurPing = LP:GetNetworkPing() * 1000
             local stat = GetStat()
@@ -396,6 +395,6 @@ Hunt: %s | Hop: %s
 end
 
 -- Start
-FastLoad()
+ShowLoading()
 task.wait(1.6)
 LoadUI()
